@@ -18,34 +18,34 @@ class ImageProcessorApp:
         button_frame.pack(pady=10)
 
         self.load_button = tk.Button(button_frame, text="Load Image", command=self.load_image, width=15)
-        self.load_button.grid(row=0, column=0, padx=10)
+        self.load_button.grid(row=0, column=0, padx=10, pady=10)
 
         self.rotate_button = tk.Button(button_frame, text="Rotate", command=self.rotate_image, width=15)
-        self.rotate_button.grid(row=0, column=1, padx=10)
+        self.rotate_button.grid(row=0, column=1, padx=10, pady=10)
 
         self.crop_button = tk.Button(button_frame, text="Crop", command=self.crop_image, width=15)
-        self.crop_button.grid(row=0, column=2, padx=10)
+        self.crop_button.grid(row=0, column=2, padx=10, pady=10)
 
         self.flip_button = tk.Button(button_frame, text="Convert to Grayscale", command=self.flip_image, width=20)
-        self.flip_button.grid(row=0, column=3, padx=10)
+        self.flip_button.grid(row=0, column=3, padx=10, pady=10)
 
         self.resize_button = tk.Button(button_frame, text="Resize", command=self.resize_image, width=15)
-        self.resize_button.grid(row=0, column=4, padx=10)
+        self.resize_button.grid(row=0, column=4, padx=10, pady=10)
 
         self.sharpen_button = tk.Button(button_frame, text="Sharpen", command=self.sharpen_image, width=15)
-        self.sharpen_button.grid(row=1, column=0, padx=10)
+        self.sharpen_button.grid(row=1, column=0, padx=10, pady=10)
 
         self.smooth_button = tk.Button(button_frame, text="Blur", command=self.blur_image, width=15)
-        self.smooth_button.grid(row=1, column=1, padx=10)
+        self.smooth_button.grid(row=1, column=1, padx=10, pady=10)
 
         self.edge_detect_button = tk.Button(button_frame, text="Edge Detection", command=self.edge_detection, width=15)
-        self.edge_detect_button.grid(row=1, column=2, padx=10)
+        self.edge_detect_button.grid(row=1, column=2, padx=10, pady=10)
 
         self.emboss_button = tk.Button(button_frame, text="Emboss", command=self.emboss_image, width=15)
-        self.emboss_button.grid(row=1, column=3, padx=10)
+        self.emboss_button.grid(row=1, column=3, padx=10, pady=10)
 
         self.tonal_transform_button = tk.Button(button_frame, text="Tonal Transformation", command=self.tonal_transform, width=20)
-        self.tonal_transform_button.grid(row=1, column=4, padx=10)
+        self.tonal_transform_button.grid(row=1, column=4, padx=10, pady=10)
 
         self.point_detect_button = tk.Button(button_frame, text="Point Detect", command=self.sift_feature_detection, width=15)
         self.point_detect_button.grid(row=2, column=2, padx=10, pady=10)
