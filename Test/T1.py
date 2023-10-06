@@ -9,24 +9,28 @@ class ImageProcessorApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Image Processor")
+        self.master.configure(bg="#f0f0f0")
 
-        self.image_label = tk.Label(master)
-        self.image_label.pack()
+        self.image_label = tk.Label(master, bg="#f0f0f0")
+        self.image_label.pack(pady=10)
 
-        self.load_button = tk.Button(master, text="Load Image", command=self.load_image)
-        self.load_button.pack()
+        button_frame = tk.Frame(master, bg="#f0f0f0")
+        button_frame.pack(pady=10)
 
-        self.rotate_button = tk.Button(master, text="Rotate", command=self.rotate_image)
-        self.rotate_button.pack()
+        self.load_button = tk.Button(button_frame, text="Load Image", command=self.load_image, width=15)
+        self.load_button.grid(row=0, column=0, padx=10)
 
-        self.crop_button = tk.Button(master, text="Crop", command=self.crop_image)
-        self.crop_button.pack()
+        self.rotate_button = tk.Button(button_frame, text="Rotate", command=self.rotate_image, width=15)
+        self.rotate_button.grid(row=0, column=1, padx=10)
 
-        self.flip_button = tk.Button(master, text="Flip", command=self.flip_image)
-        self.flip_button.pack()
+        self.crop_button = tk.Button(button_frame, text="Crop", command=self.crop_image, width=15)
+        self.crop_button.grid(row=0, column=2, padx=10)
 
-        self.resize_button = tk.Button(master, text="Resize", command=self.resize_image)
-        self.resize_button.pack()
+        self.flip_button = tk.Button(button_frame, text="Convert to Grayscale", command=self.flip_image, width=20)
+        self.flip_button.grid(row=0, column=3, padx=10)
+
+        self.resize_button = tk.Button(button_frame, text="Resize", command=self.resize_image, width=15)
+        self.resize_button.grid(row=0, column=4, padx=10)
 
     def load_image(self):
         file_path = filedialog.askopenfilename()
