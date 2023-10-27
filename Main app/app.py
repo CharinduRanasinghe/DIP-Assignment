@@ -1,6 +1,7 @@
 import cv2
 import tkinter as tk
 from tkinter import ttk
+from tkinter import Scale
 from tkinter import filedialog
 from tkinter import simpledialog, messagebox
 from PIL import Image, ImageTk
@@ -58,21 +59,35 @@ class ImageProcessorApp:
         self.reset_button = tk.Button(self.tab1, text="Reset Image", command=self.reset_image, width=15)
         self.reset_button.grid(row=0, column=7, padx=10, pady=10)
 
-        self.sharpen_button = tk.Button(self.tab2, text="Sharpen", command=self.sharpen_image, width=15)
-        self.sharpen_button.grid(row=1, column=0, padx=10, pady=10)
+        self.sharpen_label = tk.Label(self.tab2, text="Sharpen Image", width=20)
+        self.sharpen_label.grid(row=0, column=0, padx=10, pady=10)
+        self.sharpen_slider = Scale(self.tab2, from_=0, to=2, resolution=0.1, orient="horizontal", length=200)
+        self.sharpen_slider.set(1.0)  # Set the initial value
+        self.sharpen_slider.grid(row=0, column=1, padx=10, pady=10)
+
+        self.sharpen_button = tk.Button(self.tab2, text="Apply Sharpen", command=self.sharpen_image, width=20)
+        self.sharpen_button.grid(row=0, column=2, pady=10)
+
+
+
+
+        self.tonal_label = tk.Label(self.tab2, text="Tonal Transformation", width=20)
+        self.tonal_label.grid(row=1, column=0, padx=10, pady=10)
+        self.tonal_slider = Scale(self.tab2, from_=1, to=3, resolution=0.1, orient="horizontal", length=200)
+        self.tonal_slider.set(2.0)  # Set the initial value
+        self.tonal_slider.grid(row=1, column=1, pady=10)
+
+        self.tonal_transform_button = tk.Button(self.tab2, text="Apply Tonal Transformation", command=self.tonal_transform, width=20)
+        self.tonal_transform_button.grid(row=1, column=2, padx=10, pady=10)
 
         self.smooth_button = tk.Button(self.tab2, text="Blur", command=self.blur_image, width=15)
-        self.smooth_button.grid(row=1, column=1, padx=10, pady=10)
+        self.smooth_button.grid(row=2, column=1, padx=10)
 
         self.edge_detect_button = tk.Button(self.tab2, text="Edge Detection", command=self.edge_detection, width=15)
-        self.edge_detect_button.grid(row=1, column=2, padx=10, pady=10)
-
-
-        self.tonal_transform_button = tk.Button(self.tab2, text="Tonal Transformation", command=self.tonal_transform, width=20)
-        self.tonal_transform_button.grid(row=1, column=3, padx=10, pady=10)
-
+        self.edge_detect_button.grid(row=2, column=2, padx=10)
+        
         self.point_detect_button = tk.Button(self.tab2, text="Point Detect", command=self.sift_feature_detection, width=15)
-        self.point_detect_button.grid(row=2, column=2, padx=10, pady=10)
+        self.point_detect_button.grid(row=2, column=3, padx=10)
 
         self.load_style_button = tk.Button(self.tab3, text="Load Style Image", command=self.load_style_image)
         self.load_style_button.grid(row=2, column=5, pady=5)
@@ -213,17 +228,18 @@ class ImageProcessorApp:
     def sharpen_image(self):
         if hasattr(self, 'image'):
             og_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-            kernel = np.array([[0, -1, 0],
-                               [-1, 5, -1],
-                               [0, -1, 0]])
-            sharp_image = cv2.filter2D(self.image, -1, kernel)
+            sharpen_factor = float(self.sharpen_slider.get())
+            kernel = np.array([[-1, -1, -1],
+                               [-1, 9 + sharpen_factor, -1],
+                               [-1, -1, -1]])
+            sharpened_image = cv2.filter2D(self.image, -1, kernel)
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
             axs[0].imshow(og_image, cmap='gray')
             axs[0].set_title('Original Image')
             axs[0].axis('off')
             
-            axs[1].imshow(sharp_image, cmap='gray')
-            axs[1].set_title('Sharpened Image')
+            axs[1].imshow(sharpened_image, cmap='gray')
+            axs[1].set_title(f'Sharpened Image (Factor: {sharpen_factor})')
             axs[1].axis('off')
             
             plt.show()
@@ -263,14 +279,15 @@ class ImageProcessorApp:
     def tonal_transform(self):
         if hasattr(self, 'image'):
             og_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-            tonal_image = cv2.convertScaleAbs(self.image, alpha=2.0, beta=50)
+            tonal_factor = float(self.tonal_slider.get())
+            tonal_image = cv2.convertScaleAbs(self.image, alpha=tonal_factor, beta=0)
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
             axs[0].imshow(og_image, cmap='gray')
             axs[0].set_title('Original Image')
             axs[0].axis('off')
             
             axs[1].imshow(tonal_image, cmap='gray')
-            axs[1].set_title('Toned Image')
+            axs[1].set_title(f'Tonal Transformed (x{tonal_factor}) Image')
             axs[1].axis('off')
             
             plt.show()
