@@ -8,6 +8,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow_hub as hub
 import tensorflow as tf
+from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
+from tensorflow.keras.models import Model
+
+
+def build_denoising_autoencoder(input_shape):
+        input_img = Input(shape=input_shape)
+        x = Conv2D(32, (3, 3), activation='relu', padding='same')(input_img)
+        x = MaxPooling2D((2, 2), padding='same')(x)
+        x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+        encoded = MaxPooling2D((2, 2), padding='same')(x)
+
+        x = Conv2D(64, (3, 3), activation='relu', padding='same')(encoded)
+        x = UpSampling2D((2, 2))(x)
+        x = Conv2D(32, (3, 3), activation='relu', padding='same')(x)
+        x = UpSampling2D((2, 2))(x)
+        decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
+
+        autoencoder = Model(input_img, decoded)
+        autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+
+        return autoencoder
+
+autoencoder = build_denoising_autoencoder(input_shape=(500, 500, 3))
+
+
+
 
 
 
@@ -24,11 +50,14 @@ class ImageProcessorApp:
         self.tab1 = tk.Frame(self.tabs)
         self.tab2 = tk.Frame(self.tabs)
         self.tab3 = tk.Frame(self.tabs)
-      
+        self.tab4 = tk.Frame(self.tabs)
+        
 
         self.tabs.add(self.tab1, text="Image processing")
         self.tabs.add(self.tab2, text="Advanced")
         self.tabs.add(self.tab3, text="Style Transfer")
+        self.tabs.add(self.tab4, text="Denoising Autoencoder")
+
 
         self.image_label = tk.Label(master, bg="#f0f0f0")
         self.image_label.pack(pady=10)
@@ -50,6 +79,9 @@ class ImageProcessorApp:
 
         self.resize_button = tk.Button(self.tab1, text="Resize", command=self.resize_image, width=15)
         self.resize_button.grid(row=0, column=4, padx=10, pady=10)
+
+        self.reset_button = tk.Button(self.tab1, text="Reset Image", command=self.reset_image, width=15)
+        self.reset_button.grid(row=0, column=7, padx=10, pady=10)
 
         self.sharpen_button = tk.Button(self.tab2, text="Sharpen", command=self.sharpen_image, width=15)
         self.sharpen_button.grid(row=1, column=0, padx=10, pady=10)
@@ -76,12 +108,24 @@ class ImageProcessorApp:
         self.load_content_button = tk.Button(self.tab3, text="Load Content Image", command=self.load_content_image)
         self.load_content_button.grid(row=2, column=4, pady=5)
 
+        self.open_denoise_button = tk.Button(self.tab4, text="Open Image", command=self.open_image_denoise, width=15)
+        self.open_denoise_button.grid(row=0, column=0)
+
+        self.denoise_button = tk.Button(self.tab4, text="Denoise Image", command=self.denoise_image, width=15)
+        self.denoise_button.grid(row=0, column=1)
+
         self.model = hub.load('https://tfhub.dev/google/magenta/arbitrary-image-stylization-v1-256/2')
 
     def load_image(self):
         file_path = filedialog.askopenfilename()
         if file_path:
             self.image = cv2.imread(file_path)
+            self.original_image = self.image.copy()
+            self.display_image()
+
+    def reset_image(self):
+        if self.original_image is not None:
+            self.image = self.original_image.copy()
             self.display_image()
 
     def load_style_image(self):
@@ -135,8 +179,20 @@ class ImageProcessorApp:
 
     def crop_image(self):
         if hasattr(self, 'image'):
-            self.image = self.image[100:400, 100:400]
-            self.display_image()
+            if self.image is not None:
+                original_height, original_width, _ = self.image.shape
+                crop_coordinates = simpledialog.askstring("Crop Image", f"Enter crop coordinates and dimensions (x y width height)\nOriginal dimensions: {original_width}x{original_height}:")
+                
+                if crop_coordinates:
+                    try:
+                        x, y, width, height = map(int, crop_coordinates.split())
+                        if 0 <= x < original_width and 0 <= y < original_height and x + width <= original_width and y + height <= original_height:
+                            self.image = self.image[y:y+height, x:x+width]
+                            self.display_image()
+                        else:
+                            messagebox.showerror("Error", "Invalid crop coordinates. Please ensure they are within the image bounds.")
+                    except ValueError:
+                        messagebox.showerror("Error", "Invalid input. Please enter valid coordinates and dimensions.")
 
     def flip_image(self):
         if hasattr(self, 'image'):
@@ -260,7 +316,34 @@ class ImageProcessorApp:
             
             plt.show()
 
-    
+
+    def open_image_denoise(self):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            img = cv2.imread(file_path)
+            img = cv2.resize(img, (500, 500))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            self.image = ImageTk.PhotoImage(image=img)
+            self.display_image()
+
+    def denoise_image(self):
+        if self.image:
+            try:
+                img = ImageTk.getimage(self.image)
+                img = img.resize((500, 500))
+                img = img.convert('RGB')
+                img_array = np.array(img)
+                denoised_img = autoencoder.predict(img_array[None, ...])
+                denoised_img = denoised_img.squeeze()
+                denoised_img = (denoised_img * 255).astype(np.uint8)
+                denoised_img = Image.fromarray(denoised_img)
+                denoised_image_reference = ImageTk.PhotoImage(image=denoised_img)
+                self.display_image(denoised_image_reference)
+            except Exception as e:
+                messagebox.showerror("Error", f"Error denoising the image: {str(e)}")
+
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
